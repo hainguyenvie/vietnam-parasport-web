@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 60" width="200" height="60">
+  <rect x="5" y="10" width="40" height="40" rx="20" fill="#00529C"/>
+  <text x="25" y="35" font-family="sans-serif" font-weight="900" font-size="14" fill="#FFFFFF" text-anchor="middle">VNM</text>
+  <text x="55" y="38" font-family="sans-serif" font-weight="800" font-size="22" fill="#00529C">VINAMILK</text>
+</svg>

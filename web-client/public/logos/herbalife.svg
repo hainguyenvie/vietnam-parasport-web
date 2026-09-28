@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 60" width="200" height="60">
+  <g fill="#7AC143">
+    <path d="M15,38 C15,25 23,15 30,15 C23,25 20,38 15,38 Z"/>
+    <path d="M30,38 C30,22 38,18 43,22 C38,30 33,38 30,38 Z"/>
+    <path d="M10,38 C10,32 5,25 1,28 C5,32 7,38 10,38 Z"/>
+  </g>
+  <text x="50" y="38" font-family="sans-serif" font-weight="800" font-size="18" fill="#4A4A4A">HERBALIFE</text>
+</svg>

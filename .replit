@@ -1,0 +1,42 @@
+modules = ["nodejs-24", "python-base-3.13", "postgresql-16"]
+[nix]
+channel = "stable-25_05"
+packages = ["unzip", "redis"]
+
+[workflows]
+runButton = "Project"
+
+[[workflows.workflow]]
+name = "Project"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Start application"
+
+[[workflows.workflow]]
+name = "Start application"
+author = "agent"
+
+[workflows.workflow.metadata]
+outputType = "webview"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "bash -lc 'redis-server --bind 127.0.0.1 --save \"\" --appendonly no --daemonize yes; export JWT_SECRET=\"$SESSION_SECRET\"; export NEXTAUTH_SECRET=\"$SESSION_SECRET\"; export NEXTAUTH_URL=\"https://${REPLIT_DEV_DOMAIN}\"; export SMTP_HOST=smtp.gmail.com; export SMTP_PORT=587; export SMTP_USER=dummy@gmail.com; export SMTP_PASS=dummy; export SMTP_FROM=\"Vietnam ParaSports <noreply@vietnamparasports.org>\"; export FRONTEND_URL=\"http://127.0.0.1:5000\"; export REDIS_HOST=127.0.0.1; export REDIS_PORT=6379; npm run start:dev -w api-server & api_pid=$!; trap \"kill $api_pid 2>/dev/null || true; redis-cli shutdown nosave 2>/dev/null || true\" EXIT INT TERM; npm run dev -w web-client -- -H 0.0.0.0 -p 5000'"
+waitForPort = 5000
+
+[[ports]]
+localPort = 3001
+externalPort = 3001
+
+[[ports]]
+localPort = 5000
+externalPort = 80
+
+[deployment]
+deploymentTarget = "autoscale"
+run = ["bash", "-lc", "set -e; export PORT=3001; : \"${JWT_SECRET:?JWT_SECRET is required}\"; export NEXTAUTH_SECRET=\"${NEXTAUTH_SECRET:-$JWT_SECRET}\"; if [ -n \"${REPLIT_DOMAINS:-}\" ]; then export NEXTAUTH_URL=\"https://${REPLIT_DOMAINS%%,*}\"; export FRONTEND_URL=\"$NEXTAUTH_URL\"; fi; export SMTP_HOST=\"${SMTP_HOST:-smtp.gmail.com}\"; export SMTP_PORT=\"${SMTP_PORT:-587}\"; export SMTP_USER=\"${SMTP_USER:-disabled@example.invalid}\"; export SMTP_PASS=\"${SMTP_PASS:-disabled}\"; export SMTP_FROM=\"${SMTP_FROM:-Vietnam ParaSports <noreply@vietnamparasports.org>}\"; export REDIS_HOST=127.0.0.1; export REDIS_PORT=6379; redis-server --bind 127.0.0.1 --save \"\" --appendonly no --daemonize yes; npm run start:prod -w api-server & api_pid=$!; trap \"kill $api_pid 2>/dev/null || true; redis-cli shutdown nosave 2>/dev/null || true\" EXIT INT TERM; npm run start -w web-client -- -H 0.0.0.0 -p 5000"]
+build = ["bash", "-lc", "npm run build -w web-client && npm run build -w api-server"]
+

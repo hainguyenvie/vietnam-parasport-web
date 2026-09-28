@@ -1,0 +1,80 @@
+# Stage 1: Build
+FROM node:26-bookworm-slim AS builder
+
+WORKDIR /usr/src/app
+
+# Cài đặt công cụ giải nén cần thiết cho npm install
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    apt-get update && apt-get install -y tar bzip2 unzip
+
+# Copy root package.json
+COPY package*.json ./
+
+# Copy workspace package.json files
+COPY api-server/package*.json ./api-server/
+COPY web-client/package*.json ./web-client/
+COPY shared/package*.json ./shared/
+COPY api-server/prisma ./api-server/prisma/
+
+# Skip Puppeteer Chrome download during npm install to prevent extraction errors
+ENV PUPPETEER_SKIP_DOWNLOAD=true
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
+
+# Install all dependencies using legacy-peer-deps
+RUN npm pkg delete scripts.prepare || true
+RUN --mount=type=cache,target=/root/.npm/_cacache \
+    npm install --legacy-peer-deps --ignore-scripts
+
+# Copy the rest of the application code
+COPY . .
+
+WORKDIR /usr/src/app/web-client
+
+# Next.js telemetry is disabled
+ENV NEXT_TELEMETRY_DISABLED=1
+
+# Build Next.js application
+# Build arguments for environment variables needed at build time
+ARG NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+
+RUN npm run build
+
+# Stage 2: Production
+FROM node:26-bookworm-slim AS runner
+
+WORKDIR /usr/src/app
+
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+
+# Create a non-root user
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
+
+# Copy the standalone build from Next.js
+# The standalone output preserves workspace structure, so server.js is at web-client/server.js
+# Next.js resolves static/public paths relative to the directory containing server.js (= web-client/)
+# Therefore static files must go under ./web-client/
+COPY --from=builder /usr/src/app/web-client/public ./web-client/public
+COPY --from=builder --chown=nextjs:nodejs /usr/src/app/web-client/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /usr/src/app/web-client/package.json ./web-client/
+COPY --from=builder --chown=nextjs:nodejs /usr/src/app/web-client/.next/static ./web-client/.next/static
+
+# Note: standalone mode copies necessary node_modules, so we don't need to npm install here
+
+USER nextjs
+
+EXPOSE 3000
+
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
+
+# Note: The standalone output creates a server.js file in the root of the standalone directory,
+# but since it's a workspace, it might be in web-client/server.js.
+# Actually, the standalone output retains the folder structure: /usr/src/app/web-client/server.js
+CMD ["node", "web-client/server.js"]
+
+
+

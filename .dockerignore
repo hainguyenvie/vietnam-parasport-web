@@ -1,0 +1,51 @@
+# Dependencies
+node_modules
+.git
+.github
+.husky
+coverage
+
+# Build outputs
+dist
+.next
+build
+*.tsbuildinfo
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Docker
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Runtime uploads are mounted as a volume; keep only bundled sample carousel images.
+api-server/uploads
+web-client/public/uploads/*
+!web-client/public/uploads/1781644852147-pcy2n1.jpg
+!web-client/public/uploads/1781644855465-frmous.jpg
+!web-client/public/uploads/1781644859054-tpt9zs.jpg
+
+# Logs & temp
+*.log
+logs
+tmp
+temp
+.cache
+
+# Docs & misc
+*.md
+LICENSE
+attached_assets
+zipFile.zip
+api-server/update-pg.js

@@ -1,0 +1,24 @@
+{
+  "name": "vietnam-paralympic-sport",
+  "private": true,
+  "workspaces": [
+    "api-server",
+    "web-client",
+    "shared"
+  ],
+  "supportedArchitectures": {
+    "os": [
+      "win32",
+      "linux",
+      "darwin"
+    ],
+    "cpu": [
+      "x64",
+      "arm64"
+    ]
+  },
+  "devDependencies": {
+    "@nestjs/platform-express": "^11.0.1",
+    "eslint-plugin-react-hooks": "^7.0.0"
+  }
+}

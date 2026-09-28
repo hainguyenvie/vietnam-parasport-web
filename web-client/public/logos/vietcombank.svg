@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 60" width="200" height="60">
+  <path d="M10,40 L25,15 L40,40 Z" fill="#73B723"/>
+  <path d="M25,15 L32,30 L18,30 Z" fill="#FFFFFF" opacity="0.5"/>
+  <text x="50" y="38" font-family="sans-serif" font-weight="800" font-size="18" fill="#1C5E28">Vietcombank</text>
+</svg>

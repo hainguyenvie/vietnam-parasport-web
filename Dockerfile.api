@@ -1,0 +1,115 @@
+# Stage 1: Build
+FROM node:26-bookworm-slim AS builder
+
+WORKDIR /usr/src/app
+
+# Cài đặt các công cụ giải nén cần thiết cho Puppeteer tải Chrome
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    apt-get update && apt-get install -y tar bzip2 unzip
+
+# Copy root package.json
+COPY package*.json ./
+
+# Copy workspace package.json files to ensure dependencies can be resolved
+COPY api-server/package*.json ./api-server/
+COPY web-client/package*.json ./web-client/
+COPY shared/package*.json ./shared/
+
+# Copy prisma schema for pre-install script (if any)
+COPY api-server/prisma ./api-server/prisma/
+COPY api-server/prisma.config.ts ./api-server/
+
+# Skip Puppeteer Chrome download during npm install to prevent extraction errors
+ENV PUPPETEER_SKIP_DOWNLOAD=true
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
+
+# Install dependencies using legacy-peer-deps to prevent workspace conflicts
+RUN --mount=type=cache,target=/root/.npm/_cacache \
+    npm install --legacy-peer-deps
+
+# Copy the rest of the application code
+COPY . .
+
+# Generate Prisma client and build shared package, then the NestJS application
+WORKDIR /usr/src/app/api-server
+RUN npx prisma generate
+WORKDIR /usr/src/app
+RUN npm run build -w shared
+WORKDIR /usr/src/app/api-server
+RUN npm run build
+
+# Stage 2: Production
+FROM node:26-bookworm-slim
+
+WORKDIR /usr/src/app
+
+# Cài đặt các công cụ giải nén và thư viện đồ họa cần thiết cho Puppeteer chạy Chrome trên Linux
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    apt-get update && apt-get install -y \
+    tar bzip2 unzip chromium \
+    libnss3 libnspr4 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libxkbcommon0 libxcomposite1 \
+    libxdamage1 libxfixes3 libxrandr2 libgbm1 libasound2
+
+# Set Puppeteer executable path to system chromium
+ENV PUPPETEER_SKIP_DOWNLOAD=true
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
+
+# Copy package files (strip workspace config so npm installs locally, not hoisted)
+COPY package*.json ./
+RUN node -e "const p=require('./package.json'); delete p.workspaces; require('fs').writeFileSync('package.json',JSON.stringify(p,null,2))"
+COPY api-server/package*.json ./api-server/
+COPY shared/package*.json ./shared/
+COPY api-server/prisma ./api-server/prisma/
+COPY api-server/prisma.config.ts ./api-server/
+COPY api-server/tsconfig.seed.json ./api-server/
+COPY api-server/tsconfig.json ./api-server/
+
+WORKDIR /usr/src/app/api-server
+
+# Copy the built application
+COPY --from=builder /usr/src/app/api-server/dist ./dist
+COPY --from=builder /usr/src/app/api-server/package.json ./
+COPY --from=builder /usr/src/app/shared /usr/src/app/shared
+
+# Remove root lockfile so npm resolves deps from api-server/package.json only
+# (root lockfile has workspace entries that break resolution after workspaces are stripped)
+RUN rm -f ../package-lock.json
+
+# Remove shared workspace dependency so npm installs it as a regular dep
+RUN node -e "const p=require('./package.json'); delete p.dependencies['@vietnam-parasports/shared']; require('fs').writeFileSync('package.json',JSON.stringify(p,null,2))"
+RUN --mount=type=cache,target=/root/.npm/_cacache \
+    npm install --legacy-peer-deps --ignore-scripts
+
+# Generate Prisma client for production
+RUN npx prisma generate
+
+# Verify critical packages are resolvable
+RUN node -e "require('class-validator'); require('class-transformer'); require('@prisma/client'); require('@nestjs/platform-express'); require('@nestjs/common'); require('@nestjs/core')"
+# Verify from @nestjs/common context (simulates NestJS PackageLoader resolution)
+RUN node -e "const cwd=process.cwd(); process.chdir(require('path').join(require.resolve('@nestjs/common'),'..')); require('class-validator'); process.chdir(cwd); console.log('class-validator verified from @nestjs/common context')"
+
+# Ensure uploads directory exists
+RUN mkdir -p uploads/public uploads/settings
+
+# Create non-root user
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 nestjs && \
+    chown -R nestjs:nodejs /usr/src/app
+
+USER nestjs
+
+EXPOSE 3001
+
+CMD ["node", "dist/src/main"]
+
+
+
+
+
+
+
+
+
+

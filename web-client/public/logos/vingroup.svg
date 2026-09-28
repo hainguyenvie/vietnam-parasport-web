@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 60" width="200" height="60">
+  <path d="M15,15 L30,15 L20,45 L5,45 Z" fill="#E31A22"/>
+  <path d="M25,15 L40,15 L30,45 L15,45 Z" fill="#FBB03B"/>
+  <text x="50" y="38" font-family="sans-serif" font-weight="800" font-size="22" fill="#E31A22">VINGROUP</text>
+</svg>
