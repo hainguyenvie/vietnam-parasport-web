@@ -13,7 +13,6 @@
   [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript)](https://www.typescriptlang.org/)
   [![Redis](https://img.shields.io/badge/Redis-7-DC382D?logo=redis)](https://redis.io/)
   [![Docker](https://img.shields.io/badge/Docker-26-2496ED?logo=docker)](https://www.docker.com/)
-  [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 </div>
 
 ---
@@ -314,7 +313,7 @@ Dự án có hệ thống tài liệu toàn diện trong thư mục `docs/`:
 
 ## 📜 Giấy phép (License)
 
-Dự án này được cấp phép theo tiêu chuẩn **MIT License**. Bạn có quyền sử dụng, sao chép, sửa đổi, hợp nhất, xuất bản, phân phối một cách tự do.
+Repo hiện chưa có tệp `LICENSE`. Hãy xác nhận điều khoản cấp phép với chủ repo trước khi sử dụng lại hoặc phân phối mã nguồn.
 
 ## ✉️ Liên hệ (Contact)
 

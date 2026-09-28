@@ -67,7 +67,7 @@ services:
       - NEXT_PUBLIC_MEDIA_SIGNATURE_SECRET=${NEXT_PUBLIC_MEDIA_SIGNATURE_SECRET}
       - MEDIA_SIGNATURE_SECRET=${MEDIA_SIGNATURE_SECRET}
       - NODE_ENV=production
-      - FRONTEND_URL=https://vietnamparasports.com
+      - FRONTEND_URL=${FRONTEND_URL:?Set FRONTEND_URL in .env}
     depends_on:
       db:
         condition: service_healthy
@@ -106,7 +106,7 @@ services:
       - NEXT_PUBLIC_MEDIA_SIGNATURE_SECRET=${NEXT_PUBLIC_MEDIA_SIGNATURE_SECRET}
       - MEDIA_SIGNATURE_SECRET=${MEDIA_SIGNATURE_SECRET}
       - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
-      - NEXTAUTH_URL=${NEXTAUTH_URL:-https://vietnamparasports.com}
+      - NEXTAUTH_URL=${NEXTAUTH_URL:?Set NEXTAUTH_URL in .env}
       - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
       - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
     depends_on:

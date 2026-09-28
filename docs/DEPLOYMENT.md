@@ -108,8 +108,8 @@ cp .env.example .env
 nano .env
 ```
 
-**Important:** `NEXT_PUBLIC_API_URL` must point to the public API URL (e.g., `https://vietnamparasports.com/api/v1`).
-This variable is passed into Next.js build time via `docker compose build --build-arg`.
+**Important:** `NEXT_PUBLIC_API_URL` must point to your public API URL (e.g., `https://your-domain.example/api/v1`).
+Docker Compose passes this variable into the Next.js image at build time through `build.args`; rebuild the web image after changing it.
 
 ### Step 2: Build images
 
